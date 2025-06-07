@@ -1,10 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-public class UserLoginDto
+namespace WebApplication1.Models
 {
-    [Required]
-    public required string User_login { get; set; }
+    public class UserLoginDto
+    {
+        [Required]
+        public string? Login { get; set; }
 
-    [Required]
-    public required string User_password { get; set; }
+        [Required]
+        public string? Password { get; set; }
+    }
 }
