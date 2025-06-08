@@ -140,7 +140,7 @@ namespace WebApplication1.Controllers
             return Unauthorized("Invalid login or password.");
         }
 
-        private string GenerateJwtToken(string id, string role, string adminLevel = "Super Admin")
+        private string GenerateJwtToken(string id, string role, string adminLevel = "Admin")
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
             var secretKey = jwtSettings["Secret"];
