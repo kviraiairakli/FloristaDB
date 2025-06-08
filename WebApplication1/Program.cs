@@ -3,7 +3,7 @@ using WebApplication1.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.OpenApi.Models; // <-- Add this namespace
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,12 +13,10 @@ builder.Services.AddDbContext<WebApplication1DbContext>(options =>
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// --- START: MODIFIED SwaggerGen Configuration ---
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Florista Georgia API", Version = "v1" }); // You can customize the title
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Florista Georgia API", Version = "v1" });
 
-    // Define the security scheme for JWT Bearer
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Description = @"JWT Authorization header using the Bearer scheme.
@@ -27,10 +25,9 @@ builder.Services.AddSwaggerGen(c =>
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer" // The name of the HTTP Authorization scheme to be used in the Authorization header.
+        Scheme = "Bearer"
     });
 
-    // Add a security requirement for the "Bearer" scheme
     c.AddSecurityRequirement(new OpenApiSecurityRequirement()
     {
         {
@@ -41,16 +38,14 @@ builder.Services.AddSwaggerGen(c =>
                     Type = ReferenceType.SecurityScheme,
                     Id = "Bearer"
                 },
-                Scheme = "oauth2", // Although we use ApiKey above, 'oauth2' is often used here for JWT Bearer in Swagger
+                Scheme = "oauth2",
                 Name = "Bearer",
                 In = ParameterLocation.Header,
             },
-            new List<string>() // This list is for scopes, which are usually empty for simple JWT
+            new List<string>()
         }
     });
 });
-// --- END: MODIFIED SwaggerGen Configuration ---
-
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["Secret"];
@@ -102,3 +97,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+

@@ -4,10 +4,7 @@ namespace WebApplication1.Models
 {
     public class UserLoginDto
     {
-        [Required]
-        public string? Login { get; set; }
-
-        [Required]
-        public string? Password { get; set; }
+        public string User_login { get; set; } // Matches the JSON field name
+        public string User_password { get; set; } // Matches the JSON field name
     }
 }

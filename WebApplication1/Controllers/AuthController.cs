@@ -31,7 +31,7 @@ namespace WebApplication1.Controllers
         [HttpPost("registerUser")]
         public async Task<IActionResult> RegisterUser([FromBody] UserLoginDto request)
         {
-            if (string.IsNullOrWhiteSpace(request.Login) || string.IsNullOrWhiteSpace(request.Password))
+            if (string.IsNullOrWhiteSpace(request.User_login) || string.IsNullOrWhiteSpace(request.User_password))
             {
                 return BadRequest("Login and password cannot be empty.");
             }
@@ -45,22 +45,22 @@ namespace WebApplication1.Controllers
                 newUserId = Guid.NewGuid().ToString().Substring(0, 5);
             } while (allUserIds.Contains(newUserId) || allAdminIds.Contains(newUserId));
 
-            if (await _context.Users.AnyAsync(u => u.UserLogin == request.Login))
+            if (await _context.Users.AnyAsync(u => u.UserLogin == request.User_login))
             {
                 return Conflict("User with this login already exists.");
             }
 
-            if (await _context.Admins.AnyAsync(a => a.AdminLogin == request.Login))
+            if (await _context.Admins.AnyAsync(a => a.AdminLogin == request.User_login))
             {
                 return Conflict("Login is reserved by an administrator.");
             }
 
-            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.User_password);
 
             var newUser = new User
             {
                 UserId = newUserId,
-                UserLogin = request.Login,
+                UserLogin = request.User_login,
                 UserPassword = hashedPassword,
                 UserName = "New User"
             };
@@ -74,7 +74,7 @@ namespace WebApplication1.Controllers
         [HttpPost("registerAdmin")]
         public async Task<IActionResult> RegisterAdmin([FromBody] UserLoginDto request)
         {
-            if (string.IsNullOrWhiteSpace(request.Login) || string.IsNullOrWhiteSpace(request.Password))
+            if (string.IsNullOrWhiteSpace(request.User_login) || string.IsNullOrWhiteSpace(request.User_password))
             {
                 return BadRequest("Login and password cannot be empty.");
             }
@@ -88,22 +88,22 @@ namespace WebApplication1.Controllers
                 newAdminId = Guid.NewGuid().ToString().Substring(0, 5);
             } while (allUserIds.Contains(newAdminId) || allAdminIds.Contains(newAdminId));
 
-            if (await _context.Admins.AnyAsync(a => a.AdminLogin == request.Login))
+            if (await _context.Admins.AnyAsync(a => a.AdminLogin == request.User_login))
             {
                 return Conflict("Admin with this login already exists.");
             }
 
-            if (await _context.Users.AnyAsync(u => u.UserLogin == request.Login))
+            if (await _context.Users.AnyAsync(u => u.UserLogin == request.User_login))
             {
                 return Conflict("Login is reserved by a regular user.");
             }
 
-            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.User_password);
 
             var newAdmin = new Admin
             {
                 AdminId = newAdminId,
-                AdminLogin = request.Login,
+                AdminLogin = request.User_login,
                 AdminPassword = hashedPassword,
                 AdminUser = "New Admin",
                 AdminLevel = "Basic"
@@ -118,20 +118,20 @@ namespace WebApplication1.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDto request)
         {
-            if (string.IsNullOrWhiteSpace(request.Login) || string.IsNullOrWhiteSpace(request.Password))
+            if (string.IsNullOrWhiteSpace(request.User_login) || string.IsNullOrWhiteSpace(request.User_password))
             {
                 return BadRequest("Login and password cannot be empty.");
             }
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserLogin == request.Login);
-            if (user != null && BCrypt.Net.BCrypt.Verify(request.Password, user.UserPassword))
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.UserLogin == request.User_login);
+            if (user != null && BCrypt.Net.BCrypt.Verify(request.User_password, user.UserPassword))
             {
                 var token = GenerateJwtToken(user.UserId, "User");
                 return Ok(new { Token = token, Role = "User", UserId = user.UserId });
             }
 
-            var admin = await _context.Admins.FirstOrDefaultAsync(a => a.AdminLogin == request.Login);
-            if (admin != null && BCrypt.Net.BCrypt.Verify(request.Password, admin.AdminPassword))
+            var admin = await _context.Admins.FirstOrDefaultAsync(a => a.AdminLogin == request.User_login);
+            if (admin != null && BCrypt.Net.BCrypt.Verify(request.User_password, admin.AdminPassword))
             {
                 var token = GenerateJwtToken(admin.AdminId, "Admin", admin.AdminLevel);
                 return Ok(new { Token = token, Role = "Admin", AdminId = admin.AdminId, AdminLevel = admin.AdminLevel });
@@ -140,7 +140,7 @@ namespace WebApplication1.Controllers
             return Unauthorized("Invalid login or password.");
         }
 
-        private string GenerateJwtToken(string id, string role, string adminLevel = null)
+        private string GenerateJwtToken(string id, string role, string adminLevel = "Super Admin")
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
             var secretKey = jwtSettings["Secret"];
