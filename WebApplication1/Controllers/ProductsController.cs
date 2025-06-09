@@ -42,7 +42,6 @@ namespace WebApplication1.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Product>> CreateProduct(ProductCreateDto productDto)
         {
             string newProductId;
@@ -80,7 +79,6 @@ namespace WebApplication1.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateProduct(string id, ProductUpdateDto productDto)
         {
             if (id != productDto.ProductId)
@@ -131,7 +129,6 @@ namespace WebApplication1.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteProduct(string id)
         {
             var product = await _context.Products.FindAsync(id);
